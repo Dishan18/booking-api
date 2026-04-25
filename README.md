@@ -24,8 +24,8 @@ Simple backend API for:
 ### 1. Clone repo
 
 ```bash
-git clone <your-repo-url>
-cd <repo-name>
+git clone https://github.com/Dishan18/booking-api
+cd booking-api
 ```
 
 ### 2. Install dependencies
