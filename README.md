@@ -1,4 +1,4 @@
-# Activity Booking API (Next.js)
+# Activity Booking API
 
 ## Overview
 
