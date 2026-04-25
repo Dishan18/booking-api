@@ -1,40 +1,284 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Activity Booking API (Next.js)
 
-## Getting Started
+## Overview
 
-First, run the development server:
+Simple backend API for:
+
+* User registration & login (JWT auth)
+* Activity creation & management
+* Booking activities with validation (capacity + no duplicates)
+
+---
+
+## Tech Stack
+
+* Next.js (API routes)
+* JWT (`jsonwebtoken`)
+* Password hashing (`bcryptjs`)
+* In-memory storage (no database)
+
+---
+
+## Setup Instructions
+
+### 1. Clone repo
+
+```bash
+git clone <your-repo-url>
+cd <repo-name>
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Run server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Server runs at:
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+```
+http://localhost:3000
+```
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+API base:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+```
+http://localhost:3000/api
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Important Note
 
-To learn more about Next.js, take a look at the following resources:
+```
+Data is stored in-memory → resets when server restarts
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# API Usage (Postman)
 
-## Deploy on Vercel
+## 1. Setup Postman
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Create Environment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+Variables:
+
+```
+base_url = http://localhost:3000/api
+token =
+activityId =
+```
+
+---
+
+## 2. Register User
+
+**POST** `{{base_url}}/auth/register`
+
+Body (JSON):
+
+```json
+{
+  "name": "test",
+  "email": "test@test.com",
+  "password": "123456"
+}
+```
+
+Response:
+
+```json
+{
+  "message": "Registered"
+}
+```
+
+---
+
+## 3. Login
+
+**POST** `{{base_url}}/auth/login`
+
+Body:
+
+```json
+{
+  "email": "test@test.com",
+  "password": "123456"
+}
+```
+
+Response:
+
+```json
+{
+  "token": "JWT_TOKEN"
+}
+```
+
+### Save token automatically (Postman Script)
+
+Go to **Scripts → Post-response**:
+
+```javascript
+pm.environment.set("token", pm.response.json().token);
+```
+
+---
+
+## 4. Create Activity
+
+**POST** `{{base_url}}/activities`
+
+Headers:
+
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "title": "Cricket",
+  "description": "match",
+  "date": "2026-05-01",
+  "capacity": 2
+}
+```
+
+Response:
+
+```json
+{
+  "id": "123",
+  "title": "Cricket",
+  "description": "match",
+  "date": "2026-05-01",
+  "capacity": 2
+}
+```
+
+### Save activityId
+
+```javascript
+pm.environment.set("activityId", pm.response.json().id);
+```
+
+---
+
+## 5. Get All Activities
+
+**GET** `{{base_url}}/activities`
+
+---
+
+## 6. Get Single Activity
+
+**GET** `{{base_url}}/activities/{{activityId}}`
+
+---
+
+## 7. Update Activity (Admin Only)
+
+**PUT** `{{base_url}}/activities/{{activityId}}`
+
+Headers:
+
+```
+Authorization: Bearer {{token}}
+```
+
+---
+
+## 8. Delete Activity (Admin Only)
+
+**DELETE** `{{base_url}}/activities/{{activityId}}`
+
+Headers:
+
+```
+Authorization: Bearer {{token}}
+```
+
+---
+
+## 9. Book Activity
+
+**POST** `{{base_url}}/bookings`
+
+Headers:
+
+```
+Authorization: Bearer {{token}}
+Content-Type: application/json
+```
+
+Body:
+
+```json
+{
+  "activityId": "{{activityId}}"
+}
+```
+
+Response:
+
+```json
+{
+  "id": "booking_id",
+  "userId": "...",
+  "activityId": "...",
+  "createdAt": "..."
+}
+```
+
+---
+
+## 10. Get My Bookings
+
+**GET** `{{base_url}}/bookings/me`
+
+Headers:
+
+```
+Authorization: Bearer {{token}}
+```
+
+---
+
+# Validation Rules
+
+* Cannot book same activity twice
+* Cannot exceed activity capacity
+* Only authenticated users can book
+* Only admin can update/delete activities
+
+---
+
+# Error Codes
+
+| Code | Meaning                                                       |
+| ---- | ------------------------------------------------------------- |
+| 400  | Bad Request (invalid input, duplicate booking, full capacity) |
+| 401  | Unauthorized (missing/invalid token)                          |
+| 403  | Forbidden (non-admin access)                                  |
+| 404  | Not Found                                                     |
+
+---
+
+# Example Flow
+
+```
+Register → Login → Create Activity → Book Activity → Get My Bookings
+```
+
+---
