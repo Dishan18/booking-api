@@ -196,7 +196,7 @@ Headers:
 ```
 Authorization: Bearer {{token}}
 ```
-
+> Note: Only user with email `admin@test.com` can update or delete activities (admin is simulated).
 ---
 
 ## 8. Delete Activity (Admin Only)
