@@ -138,6 +138,7 @@ pm.environment.set("token", pm.response.json().token);
 **POST** `{{base_url}}/activities`
 
 Headers:
+Should only work with admin@test.com
 
 ```
 Authorization: Bearer {{token}}
@@ -196,7 +197,7 @@ Headers:
 ```
 Authorization: Bearer {{token}}
 ```
-> Note: Only user with email `admin@test.com` can update or delete activities (admin is simulated).
+> Note: Only user with email `admin@test.com` can create, update or delete activities (admin is simulated).
 ---
 
 ## 8. Delete Activity (Admin Only)

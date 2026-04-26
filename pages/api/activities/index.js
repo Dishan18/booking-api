@@ -10,6 +10,9 @@ export default function handler(req, res) {
     if (!user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
+    if (user.email !== "admin@test.com") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
     const { title, description, date, capacity } = req.body;
     if (!title || !capacity) {
       return res.status(400).json({ error: "Title and capacity required" });
